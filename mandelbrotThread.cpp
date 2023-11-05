@@ -36,16 +36,14 @@ extern void mandelbrotSerial(
 void workerThreadStart(WorkerArgs *const args)
 {
     // clock_t start = clock();
-    int q = args->height / args->numThreads;
-    int startRow = args->threadId * q;
-    int totalRows = q + (args->threadId == args->numThreads - 1 ? 0 : args->height % args->numThreads); 
-    
-    mandelbrotSerial(args->x0, args->y0, args->x1, args->y1,
-                     args->width, args->height, startRow, totalRows,
-                     args->maxIterations, args->output);
+    for(int i = args->threadId; i < args->height; i+=args->numThreads){
+        mandelbrotSerial(args->x0, args->y0, args->x1, args->y1,
+                        args->width, args->height, i, 1,
+                        args->maxIterations, args->output);
+    }
     // clock_t end = clock();
     // double execTime = ((double)(end - start))/CLOCKS_PER_SEC;
-    // printf("Thread %d, height = %d, width = %d,  execTime = %f,\n\
+    // printf("Thread %d, height = %d, width = %d,  execTime = %f,\n
     //         x0 = %f, x1 = %f, y0 = %f, y1 = %f, execRow = %d~%d, \n", 
     //         args->threadId, args->height, args->width, execTime,
     //         args->x0, args->x1, args->y0, args->y1, startRow, startRow + totalRows);
