@@ -4,28 +4,20 @@
 #include <time.h>
 #include <sys/types.h>
 #include <unistd.h>
-double monteCarlo(int rank, long long int tosses){
-    unsigned int seed = rank;
+double monteCarlo(unsigned int seed, long long int tosses){
     long long int numberInCircle = 0;
-
     for(int i = 0; i < tosses; i++){
-        // srand(seed);
-        // double x = static_cast<double>(rand()) / RAND_MAX * 2 - 1;
-        // double y = static_cast<double>(rand()) / RAND_MAX * 2 - 1;
         double x = (float) rand_r(&seed) / RAND_MAX*2 - 1;//-1 + (float) (rand_r(&seed)) / ( (float) (RAND_MAX/(1-(-1))));
         double y = (float) rand_r(&seed) / RAND_MAX*2 - 1;//-1 + (float) (rand_r(&seed)) / ( (float) (RAND_MAX/(1-(-1))));
-
         double distanceSquared = x * x + y * y;
 
         if(distanceSquared <= 1) numberInCircle++;
     }
-    // double ans = 4 * static_cast<double>(numberInCircle) / ((double)(tosses));
-    double ans = 4 * numberInCircle / ((double) tosses);
-    // printf("我是%d，我算出來的結果是%f, numInCir = %d, tosses = %lld \n", rank,ans, numberInCircle, tosses);
-    return ans;
+    return 4 * numberInCircle / ((double) tosses);
 }
 int main(int argc, char **argv)
 {
+    unsigned int seed = time(NULL);
     // --- DON'T TOUCH ---
     MPI_Init(&argc, &argv);
     double start_time = MPI_Wtime();
@@ -45,14 +37,14 @@ int main(int argc, char **argv)
     {
         // TODO: handle workers
         double part_result = 0.0;
-        part_result += monteCarlo(world_rank, toss_per_rank);
+        part_result += monteCarlo(seed, toss_per_rank);
         // printf("我是%d，我算出來的結果是%f\n", world_rank,pi_result);
         MPI_Send((&part_result), 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
     }
     else if (world_rank == 0)
     {
         // TODO: master
-        pi_result += monteCarlo(world_rank, toss_per_rank + remain);
+        pi_result += monteCarlo(seed, toss_per_rank + remain);
         // printf("我是%d，我算出來的結果是%f\n", world_rank,pi_result);
     }
 
