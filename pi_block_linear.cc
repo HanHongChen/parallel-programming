@@ -4,7 +4,26 @@
 #include <time.h>
 #include <sys/types.h>
 #include <unistd.h>
+double monteCarlo(int rank, long long int tosses){
+    unsigned int seed = rank;
+    long long int numberInCircle = 0;
 
+    for(int i = 0; i < tosses; i++){
+        // srand(seed);
+        // double x = static_cast<double>(rand()) / RAND_MAX * 2 - 1;
+        // double y = static_cast<double>(rand()) / RAND_MAX * 2 - 1;
+        double x = (float) rand_r(&seed) / RAND_MAX*2 - 1;//-1 + (float) (rand_r(&seed)) / ( (float) (RAND_MAX/(1-(-1))));
+        double y = (float) rand_r(&seed) / RAND_MAX*2 - 1;//-1 + (float) (rand_r(&seed)) / ( (float) (RAND_MAX/(1-(-1))));
+
+        double distanceSquared = x * x + y * y;
+
+        if(distanceSquared <= 1) numberInCircle++;
+    }
+    // double ans = 4 * static_cast<double>(numberInCircle) / ((double)(tosses));
+    double ans = 4 * numberInCircle / ((double) tosses);
+    // printf("我是%d，我算出來的結果是%f, numInCir = %d, tosses = %lld \n", rank,ans, numberInCircle, tosses);
+    return ans;
+}
 int main(int argc, char **argv)
 {
     // --- DON'T TOUCH ---
@@ -16,20 +35,37 @@ int main(int argc, char **argv)
     // ---
 
     // TODO: init MPI
-
+    pi_result = 0.0;
+    MPI_Status status;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    long long int toss_per_rank = tosses / world_size;
+    long long int remain = tosses % world_size;
     if (world_rank > 0)
     {
         // TODO: handle workers
+        double part_result = 0.0;
+        part_result += monteCarlo(world_rank, toss_per_rank);
+        // printf("我是%d，我算出來的結果是%f\n", world_rank,pi_result);
+        MPI_Send((&part_result), 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
     }
     else if (world_rank == 0)
     {
         // TODO: master
+        pi_result += monteCarlo(world_rank, toss_per_rank + remain);
+        // printf("我是%d，我算出來的結果是%f\n", world_rank,pi_result);
     }
 
     if (world_rank == 0)
     {
         // TODO: process PI result
-
+        
+        for(int i = 1; i < world_size; i++){
+            double pi_result_others;
+            MPI_Recv((&pi_result_others), 1, MPI_DOUBLE, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+            pi_result += pi_result_others;
+        }
+        pi_result /= world_size;
         // --- DON'T TOUCH ---
         double end_time = MPI_Wtime();
         printf("%lf\n", pi_result);
