@@ -4,6 +4,8 @@
 #include <time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#pragma GCC optimize("Ofast", "unroll-loops")
+
 double monteCarlo(unsigned int seed, long long int tosses){
     long long int numberInCircle = 0;
     for(int i = 0; i < tosses; i++){
