@@ -49,6 +49,7 @@ void hostFE (float upperX, float upperY, float lowerX, float lowerY, int* img, i
 
     int size = resX * resY * sizeof(int);
     int* result_ptr;
+    int* result = (int*) malloc(size);
     cudaMalloc((void**) &result_ptr, size);
 
     //設定GPU及memory
@@ -60,6 +61,7 @@ void hostFE (float upperX, float upperY, float lowerX, float lowerY, int* img, i
     dim3 blocks_per_grid(block_x, block_y);
     mandelKernel<<<blocks_per_grid, threads_per_block>>>(lowerX, lowerY, resX, resY, maxIterations, stepX, stepY, result_ptr);
     
-    cudaMemcpy(img, result_ptr, size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(result, result_ptr, size, cudaMemcpyDeviceToHost);
+    memcpy(img, result, size);
     cudaFree(result_ptr);
 }
