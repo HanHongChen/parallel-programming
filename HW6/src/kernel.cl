@@ -1,7 +1,7 @@
 __kernel void convolution(
     __global float *inp_data,
     __global float *oup_dat,
-    __global float *fil_dat,
+    __constant float *fil_dat,
     int imageHeight,
     int imageWidth,
     int filterWidth,
