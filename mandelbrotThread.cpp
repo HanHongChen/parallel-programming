@@ -35,21 +35,11 @@ extern void mandelbrotSerial(
 // Thread entrypoint.
 void workerThreadStart(WorkerArgs *const args)
 {
-    // clock_t start = clock();
     for(int i = args->threadId; i < args->height; i+=args->numThreads){
         mandelbrotSerial(args->x0, args->y0, args->x1, args->y1,
                         args->width, args->height, i, 1,
                         args->maxIterations, args->output);
     }
-    // clock_t end = clock();
-    // double execTime = ((double)(end - start))/CLOCKS_PER_SEC;
-    // printf("Thread %d, height = %d, width = %d,  execTime = %f,\n
-    //         x0 = %f, x1 = %f, y0 = %f, y1 = %f, execRow = %d~%d, \n", 
-    //         args->threadId, args->height, args->width, execTime,
-    //         args->x0, args->x1, args->y0, args->y1, startRow, startRow + totalRows);
-    // if(args->threadId == 1) printf("---------------\n");
-    
-    // writePPMImage(args->output, args->width, args->height, "mandelbrot-thread1.ppm", args->maxIterations);
     // printf("Hello world from thread %d\n", args->threadId);
 }
 
